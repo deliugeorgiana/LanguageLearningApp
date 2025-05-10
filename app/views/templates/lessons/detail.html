@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lessons.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="lesson-detail-container">
+    <div class="lesson-header">
+        <h1>{{ lesson.title }}</h1>
+        <div class="lesson-meta">
+            <span class="badge badge-{{ lesson.difficulty }}">{{ lesson.difficulty|capitalize }}</span>
+            <span class="badge badge-language">{{ lesson.language|capitalize }}</span>
+        </div>
+    </div>
+    
+    <div class="lesson-content">
+        {{ lesson.content|safe }}
+    </div>
+    
+    <div class="lesson-actions">
+        {% if current_user.is_authenticated %}
+            <button id="completeLesson" class="btn btn-primary" data-lesson-id="{{ lesson.id }}">
+                Mark as Completed
+            </button>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">
+                Login to Track Progress
+            </a>
+        {% endif %}
+        
+        <a href="{{ url_for('lessons.quiz', lesson_id=lesson.id) }}" class="btn btn-secondary">
+            Take Quiz
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/lessons.js') }}"></script>
+{% endblock %}

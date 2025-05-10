@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="page-title">Welcome, {{ current_user.username }}!</h1>
+    
+    <div class="dashboard-grid">
+        <div class="stats-card">
+            <h3>Your Progress</h3>
+            <div class="progress-circle" data-percent="{{ progress_percent }}">
+                <span class="progress-value">{{ progress_percent }}%</span>
+            </div>
+            <p>{{ completed_lessons }} of {{ total_lessons }} lessons completed</p>
+        </div>
+        
+        <div class="recent-lessons">
+            <h3>Recent Lessons</h3>
+            <ul class="lesson-list">
+                {% for lesson in recent_lessons %}
+                <li>
+                    <a href="{{ url_for('lessons.lesson_detail', lesson_id=lesson.id) }}">
+                        {{ lesson.title }}
+                    </a>
+                    <span class="badge badge-{{ lesson.difficulty }}">{{ lesson.difficulty|capitalize }}</span>
+                </li>
+                {% else %}
+                <li class="empty-message">No recent lessons yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="recommended-lessons">
+            <h3>Recommended For You</h3>
+            <div class="recommended-grid">
+                {% for lesson in recommended_lessons %}
+                <div class="recommended-card">
+                    <h4>{{ lesson.title }}</h4>
+                    <div class="lesson-meta">
+                        <span class="badge badge-{{ lesson.difficulty }}">{{ lesson.difficulty|capitalize }}</span>
+                        <span class="badge badge-language">{{ lesson.language|capitalize }}</span>
+                    </div>
+                    <a href="{{ url_for('lessons.lesson_detail', lesson_id=lesson.id) }}" class="btn btn-sm btn-outline-primary">Start</a>
+                </div>
+                {% else %}
+                <div class="empty-message">Complete some lessons to get recommendations.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

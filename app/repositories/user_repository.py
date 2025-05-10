@@ -1,160 +1,154 @@
+# app/repositories/user_repository.py
+
 from app.utils.security import get_password_hash, verify_password
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
-from app.models.user import User, UserLanguage  # Fixed import
-from app.utils.security import generate_password_hash, verify_password  # Fixed imports
+from app.models.user import User, UserLanguage
+from app import db
 
 class UserRepository:
     """
-    Repository pentru operațiuni legate de utilizatori.
+    Repository for user-related database operations.
     """
 
     @staticmethod
-    def create_user(db: Session, user_data: Dict[str, Any]) -> User:
+    def create_user(user_data: Dict[str, Any]) -> User:
         """
-        Creează un nou utilizator în baza de date.
+        Create a new user in the database.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_data: Dicționar cu datele utilizatorului.
+            user_data: Dictionary with user data
 
         Returns:
-            Obiectul utilizator creat.
+            The created User object
         """
-        # Securizarea parolei înainte de salvare
+        # Hash password before saving
         if "password" in user_data:
             user_data["password_hash"] = get_password_hash(user_data.pop("password"))
 
         user = User(**user_data)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
         return user
 
     @staticmethod
-    def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
+    def get_user_by_id(user_id: int) -> Optional[User]:
         """
-        Obține un utilizator după ID.
+        Get a user by ID.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_id: ID-ul utilizatorului căutat.
+            user_id: ID of the user to retrieve
 
         Returns:
-            Obiectul utilizator sau None dacă nu există.
+            User object or None if not found
         """
-        return db.query(User).filter(User.id == user_id).first()
+        return User.query.get(user_id)
 
     @staticmethod
-    def get_user_by_email(db: Session, email: str) -> Optional[User]:
+    def get_user_by_email(email: str) -> Optional[User]:
         """
-        Obține un utilizator după adresa de email.
+        Get a user by email address.
 
         Args:
-            db: Sesiunea de bază de date.
-            email: Adresa de email căutată.
+            email: Email address to search for
 
         Returns:
-            Obiectul utilizator sau None dacă nu există.
+            User object or None if not found
         """
-        return db.query(User).filter(User.email == email).first()
+        return User.query.filter(User.email == email).first()
 
     @staticmethod
-    def get_user_by_username(db: Session, username: str) -> Optional[User]:
+    def get_user_by_username(username: str) -> Optional[User]:
         """
-        Obține un utilizator după numele de utilizator.
+        Get a user by username.
 
         Args:
-            db: Sesiunea de bază de date.
-            username: Numele de utilizator căutat.
+            username: Username to search for
 
         Returns:
-            Obiectul utilizator sau None dacă nu există.
+            User object or None if not found
         """
-        return db.query(User).filter(User.username == username).first()
+        return User.query.filter(User.username == username).first()
 
     @staticmethod
-    def get_users(db: Session, skip: int = 0, limit: int = 100, active_only: bool = True) -> List[User]:
+    def get_users(skip: int = 0, limit: int = 100, active_only: bool = True) -> List[User]:
         """
-        Obține o listă de utilizatori.
+        Get a list of users with pagination.
 
         Args:
-            db: Sesiunea de bază de date.
-            skip: Numărul de înregistrări de sărit.
-            limit: Numărul maxim de înregistrări de returnat.
-            active_only: Dacă se returnează doar utilizatorii activi.
+            skip: Number of records to skip
+            limit: Maximum number of records to return
+            active_only: Whether to return only active users
 
         Returns:
-            Lista de utilizatori.
+            List of User objects
         """
-        query = db.query(User)
+        query = User.query
         if active_only:
             query = query.filter(User.is_active == True)
         return query.offset(skip).limit(limit).all()
 
     @staticmethod
-    def update_user(db: Session, user_id: int, update_data: Dict[str, Any]) -> Optional[User]:
+    def update_user(user_id: int, update_data: Dict[str, Any]) -> Optional[User]:
         """
-        Actualizează datele unui utilizator.
+        Update a user's information.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_id: ID-ul utilizatorului de actualizat.
-            update_data: Dicționar cu datele de actualizat.
+            user_id: ID of the user to update
+            update_data: Dictionary with data to update
 
         Returns:
-            Obiectul utilizator actualizat sau None dacă utilizatorul nu există.
+            Updated User object or None if not found
         """
-        user = UserRepository.get_user_by_id(db, user_id)
+        user = UserRepository.get_user_by_id(user_id)
         if not user:
             return None
 
-        # Gestionarea parolei dacă este inclusă în actualizare
+        # Handle password if included in update
         if "password" in update_data:
             update_data["password_hash"] = get_password_hash(update_data.pop("password"))
 
         for key, value in update_data.items():
             setattr(user, key, value)
 
-        db.commit()
-        db.refresh(user)
+        db.session.commit()
+        db.session.refresh(user)
         return user
 
     @staticmethod
-    def delete_user(db: Session, user_id: int) -> bool:
+    def delete_user(user_id: int) -> bool:
         """
-        Șterge un utilizator din baza de date.
+        Delete a user from the database.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_id: ID-ul utilizatorului de șters.
+            user_id: ID of the user to delete
 
         Returns:
-            True dacă utilizatorul a fost șters, False altfel.
+            True if deleted, False if not found
         """
-        user = UserRepository.get_user_by_id(db, user_id)
+        user = UserRepository.get_user_by_id(user_id)
         if not user:
             return False
 
-        db.delete(user)
-        db.commit()
+        db.session.delete(user)
+        db.session.commit()
         return True
 
     @staticmethod
-    def authenticate_user(db: Session, username_or_email: str, password: str) -> Optional[User]:
+    def authenticate_user(username_or_email: str, password: str) -> Optional[User]:
         """
-        Autentifică un utilizator folosind numele de utilizator sau email-ul și parola.
+        Authenticate a user using username/email and password.
 
         Args:
-            db: Sesiunea de bază de date.
-            username_or_email: Numele de utilizator sau email-ul pentru autentificare.
-            password: Parola pentru autentificare.
+            username_or_email: Username or email for authentication
+            password: Password for authentication
 
         Returns:
-            Obiectul utilizator autentificat sau None dacă autentificarea eșuează.
+            Authenticated User object or None if authentication fails
         """
-        user = db.query(User).filter(
+        user = User.query.filter(
             or_(
                 User.username == username_or_email,
                 User.email == username_or_email
@@ -167,132 +161,111 @@ class UserRepository:
         return user
 
     @staticmethod
-    def deactivate_user(db: Session, user_id: int) -> Optional[User]:
+    def deactivate_user(user_id: int) -> Optional[User]:
         """
-        Dezactivează un utilizator (alternative la ștergerea permanentă).
+        Deactivate a user account.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_id: ID-ul utilizatorului de dezactivat.
+            user_id: ID of the user to deactivate
 
         Returns:
-            Obiectul utilizator dezactivat sau None dacă utilizatorul nu există.
+            Deactivated User object or None if not found
         """
-        return UserRepository.update_user(db, user_id, {"is_active": False})
+        return UserRepository.update_user(user_id, {"is_active": False})
 
     @staticmethod
-    def add_user_language(db: Session, user_id: int, language_data: Dict[str, Any]) -> Optional[UserLanguage]:
+    def add_user_language(user_id: int, language_data: Dict[str, Any]) -> Optional[UserLanguage]:
         """
-        Adaugă o limbă de învățare pentru un utilizator.
+        Add a learning language for a user.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_id: ID-ul utilizatorului.
-            language_data: Dicționar cu datele limbii.
+            user_id: ID of the user
+            language_data: Dictionary with language data
 
         Returns:
-            Obiectul UserLanguage creat sau None dacă utilizatorul nu există.
+            Created UserLanguage object or None if user not found
         """
-        user = UserRepository.get_user_by_id(db, user_id)
+        user = UserRepository.get_user_by_id(user_id)
         if not user:
             return None
 
         language_data["user_id"] = user_id
         user_language = UserLanguage(**language_data)
 
-        db.add(user_language)
-        db.commit()
-        db.refresh(user_language)
+        db.session.add(user_language)
+        db.session.commit()
+        db.session.refresh(user_language)
         return user_language
 
     @staticmethod
-    def get_user_languages(db: Session, user_id: int) -> List[UserLanguage]:
+    def get_user_languages(user_id: int) -> List[UserLanguage]:
         """
-        Obține toate limbile de învățare ale unui utilizator.
+        Get all learning languages for a user.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_id: ID-ul utilizatorului.
+            user_id: ID of the user
 
         Returns:
-            Lista de limbi de învățare ale utilizatorului.
+            List of UserLanguage objects for the user
         """
-        return db.query(UserLanguage).filter(UserLanguage.user_id == user_id).all()
+        return UserLanguage.query.filter(UserLanguage.user_id == user_id).all()
 
     @staticmethod
-    def update_user_language(db: Session, user_language_id: int, update_data: Dict[str, Any]) -> Optional[UserLanguage]:
+    def update_user_language(user_language_id: int, update_data: Dict[str, Any]) -> Optional[UserLanguage]:
         """
-        Actualizează informațiile despre limba de învățare a unui utilizator.
+        Update a user's language information.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_language_id: ID-ul relației UserLanguage.
-            update_data: Dicționar cu datele de actualizat.
+            user_language_id: ID of the UserLanguage record
+            update_data: Dictionary with data to update
 
         Returns:
-            Obiectul UserLanguage actualizat sau None dacă nu există.
+            Updated UserLanguage object or None if not found
         """
-        user_language = db.query(UserLanguage).filter(UserLanguage.id == user_language_id).first()
+        user_language = UserLanguage.query.get(user_language_id)
         if not user_language:
             return None
 
         for key, value in update_data.items():
             setattr(user_language, key, value)
 
-        db.commit()
-        db.refresh(user_language)
+        db.session.commit()
+        db.session.refresh(user_language)
         return user_language
 
     @staticmethod
-    def delete_user_language(db: Session, user_language_id: int) -> bool:
+    def delete_user_language(user_language_id: int) -> bool:
         """
-        Șterge o limbă din lista de limbi de învățare a unui utilizator.
+        Delete a user's language record.
 
         Args:
-            db: Sesiunea de bază de date.
-            user_language_id: ID-ul relației UserLanguage.
+            user_language_id: ID of the UserLanguage record to delete
 
         Returns:
-            True dacă limba a fost ștearsă, False altfel.
+            True if deleted, False if not found
         """
-        user_language = db.query(UserLanguage).filter(UserLanguage.id == user_language_id).first()
+        user_language = UserLanguage.query.get(user_language_id)
         if not user_language:
             return False
 
-        db.delete(user_language)
-        db.commit()
+        db.session.delete(user_language)
+        db.session.commit()
         return True
 
     @staticmethod
-    def add_user_language(db: Session, user_id: int, language_data: Dict[str, Any]) -> Optional[UserLanguage]:
-        user = UserRepository.get_user_by_id(db, user_id)
-        if not user:
-            return None
-
-        language = UserLanguage(
-            user_id=user_id,
-            language=language_data['language'],
-            level=language_data.get('level', 'beginner')
-        )
-        db.add(language)
-        db.commit()
-        db.refresh(language)
-        return language
-    @staticmethod
-    def search_users(db: Session, query: str, limit: int = 20) -> List[User]:
+    def search_users(query: str, limit: int = 20) -> List[User]:
         """
-        Caută utilizatori după numele de utilizator, email, prenume sau nume.
+        Search users by username, email, first name, or last name.
 
         Args:
-            db: Sesiunea de bază de date.
-            query: Șirul de căutare.
-            limit: Numărul maxim de rezultate.
+            query: Search string
+            limit: Maximum number of results to return
 
         Returns:
-            Lista de utilizatori care se potrivesc cu criteriile de căutare.
+            List of User objects matching the search criteria
         """
         search_pattern = f"%{query}%"
-        return db.query(User).filter(
+        return User.query.filter(
             or_(
                 User.username.ilike(search_pattern),
                 User.email.ilike(search_pattern),
@@ -300,3 +273,19 @@ class UserRepository:
                 User.last_name.ilike(search_pattern)
             )
         ).limit(limit).all()
+
+    @staticmethod
+    def count_users(active_only: bool = True) -> int:
+        """
+        Count the number of users in the database.
+
+        Args:
+            active_only: Whether to count only active users
+
+        Returns:
+            Number of users
+        """
+        query = User.query
+        if active_only:
+            query = query.filter(User.is_active == True)
+        return query.count()

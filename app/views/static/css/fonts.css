@@ -1,0 +1,13 @@
+/* Font face definition */
+@font-face {
+    font-family: 'CustomFont';
+    src: url('../fonts/custom-font.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Usage example */
+body {
+    font-family: 'CustomFont', Arial, sans-serif;
+}
