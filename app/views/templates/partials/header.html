@@ -1,22 +1,4 @@
-<header class="app-header">
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <a href="{{ url_for('main.home') }}">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Language Learning App" class="logo">
-            </a>
-        </div>
-        <div class="navbar-menu">
-            <ul class="navbar-nav">
-                <li><a href="{{ url_for('main.home') }}">Home</a></li>
-                <li><a href="{{ url_for('lessons.list_lessons') }}">Lessons</a></li>
-                {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('user.dashboard') }}">Dashboard</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
-                    <li><a href="{{ url_for('auth.register') }}">Register</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </nav>
-</header>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Learning App</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
