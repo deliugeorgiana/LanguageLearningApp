@@ -1,0 +1,90 @@
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dashboard-container {
+    animation: fadeIn 0.6s ease-in-out;
+    padding: 2rem 1rem;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: bold;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.stats-card,
+.recent-lessons,
+.recommended-lessons {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    transition: background 0.3s ease;
+}
+
+.recommended-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.recommended-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    flex: 1 1 calc(50% - 1rem);
+    min-width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.recommended-card:hover {
+    transform: scale(1.02);
+}
+
+.badge {
+    margin-left: 0.5rem;
+}
+
+.empty-message {
+    color: gray;
+    font-style: italic;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Theme colors */
+:root {
+    --card-bg: #ffffff;
+    --body-bg: #f8f9fa;
+    --text-color: #212529;
+}
+
+body.light-mode {
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+body.dark-mode {
+    --card-bg: #1e1e2f;
+    --body-bg: #121212;
+    --text-color: #f0f0f0;
+    background-color: var(--body-bg);
+    color: var(--text-color);
+}
+
+.dark-mode .btn-outline-primary {
+    border-color: #6ea8fe;
+    color: #6ea8fe;
+}

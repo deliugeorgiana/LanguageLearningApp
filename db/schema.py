@@ -20,6 +20,18 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+    
+    class UserProfile(db.Model):
+    __tablename__ = 'user_profiles'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
+    language = db.Column(db.String(50), default='engleză')
+    level = db.Column(db.String(50), default='începător')
+    completed_lessons = db.Column(db.Integer, default=0)
+    total_score = db.Column(db.Integer, default=0)
+    total_time = db.Column(db.Integer, default=0)  # în minute
+
+    user = db.relationship('User', backref='profile', uselist=False)
 
 
 class UserLanguage(db.Model):

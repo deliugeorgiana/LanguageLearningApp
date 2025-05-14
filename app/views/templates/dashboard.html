@@ -19,6 +19,19 @@
             <p>{{ completed_lessons }} of {{ total_lessons }} lessons completed</p>
         </div>
         
+        <div class="col-md-4 mb-4">
+    <div class="card shadow">
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+            <h5>Start Learning</h5>
+            <p class="text-muted">Explore lessons to improve your skills</p>
+            <a href="{{ url_for('lessons') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-book-open me-1"></i> Go to Lessons
+            </a>
+        </div>
+    </div>
+</div>
+
+        
         <div class="recent-lessons">
             <h3>Recent Lessons</h3>
             <ul class="lesson-list">
